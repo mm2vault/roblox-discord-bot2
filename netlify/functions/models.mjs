@@ -1,7 +1,6 @@
 const headers = {
   "Content-Type": "application/json; charset=utf-8",
-  "Cache-Control": "no-store",
-  "Access-Control-Allow-Origin": "*"
+  "Cache-Control": "public, max-age=300"
 };
 
 export default async () => {
