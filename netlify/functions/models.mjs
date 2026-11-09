@@ -3,7 +3,7 @@ const headers = {
   "Cache-Control": "public, max-age=300"
 };
 
-export default async () => {
+export const handler = async () => {
   try {
     const response = await fetch("https://openrouter.ai/api/v1/models", {
       headers: { "HTTP-Referer": process.env.URL || "https://ai-hub.netlify.app", "X-Title": "AI Hub" }
