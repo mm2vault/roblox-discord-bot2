@@ -1,7 +1,62 @@
 const $ = (selector) => document.querySelector(selector);
 const state = { models: [], currentId: null, messages: [], busy: false };
 const STORAGE_KEY = "aihub_conversations_v1";
+const API_KEYS_KEY = "aihub_personal_api_keys_v1";
 
+function loadApiKeys() {
+  try { return JSON.parse(localStorage.getItem(API_KEYS_KEY) || "[]").filter(item => item && typeof item.key === "string"); }
+  catch { return []; }
+}
+function saveApiKeys(keys) {
+  localStorage.setItem(API_KEYS_KEY, JSON.stringify(keys));
+  renderApiKeys();
+}
+function maskKey(key) {
+  return key.length > 9 ? key.slice(0, 5) + "••••••" + key.slice(-4) : "••••••••";
+}
+function renderApiKeys() {
+  const host = $("#apiKeyList");
+  if (!host) return;
+  const keys = loadApiKeys();
+  host.innerHTML = "";
+  if (!keys.length) {
+    const empty = document.createElement("p");
+    empty.className = "api-key-empty";
+    empty.textContent = "Henüz kişisel anahtar eklenmedi. İstersen site sahibinin ortak havuzu kullanılabilir.";
+    host.appendChild(empty);
+    return;
+  }
+  keys.forEach((item, index) => {
+    const row = document.createElement("div");
+    row.className = "api-key-row";
+    const info = document.createElement("div");
+    info.className = "api-key-info";
+    const label = document.createElement("strong");
+    label.textContent = "Anahtar " + (index + 1) + " · " + maskKey(item.key);
+    const status = document.createElement("small");
+    status.textContent = ({active:"Son istekte başarılı", rate_limited:"Limit dolu — sonraki anahtar denenir", invalid:"Anahtar geçersiz — sonraki anahtar denenir", error:"Geçici hata — sonraki anahtar denenir"})[item.status] || "Hazır";
+    info.append(label, status);
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "remove-api-key";
+    remove.textContent = "Sil";
+    remove.setAttribute("aria-label", "Anahtarı sil");
+    remove.addEventListener("click", () => saveApiKeys(loadApiKeys().filter(entry => entry.id !== item.id)));
+    row.append(info, remove);
+    host.appendChild(row);
+  });
+}
+function addApiKey() {
+  const input = $("#apiKeyInput");
+  const key = input.value.trim();
+  if (!key) { alert("Önce API anahtarını yapıştır."); return; }
+  if (!/^sk-or-v1-[A-Za-z0-9_-]+$/.test(key)) { alert("Bu anahtar OpenRouter biçiminde görünmüyor. Anahtarı kontrol et."); return; }
+  const keys = loadApiKeys();
+  if (keys.some(item => item.key === key)) { alert("Bu anahtar zaten eklenmiş."); return; }
+  keys.push({ id: newId(), key, status: "ready" });
+  saveApiKeys(keys);
+  input.value = "";
+}
 function loadHistory() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
   catch { return []; }
@@ -87,11 +142,17 @@ async function sendMessage(prefill) {
     const response = await fetch("/.netlify/functions/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model, messages: state.messages })
+      body: JSON.stringify({ model, messages: state.messages, apiKeys: loadApiKeys().map(item => item.key) })
     });
     const data = await response.json();
+    if (Array.isArray(data.personalKeyStatuses)) {
+      const keys = loadApiKeys();
+      data.personalKeyStatuses.forEach((status, index) => { if (keys[index]) keys[index].status = status; });
+      if (Number.isInteger(data.usedPersonalKeyIndex) && keys[data.usedPersonalKeyIndex]) keys[data.usedPersonalKeyIndex].status = "active";
+      saveApiKeys(keys);
+    }
     if (!response.ok) throw new Error(data.error || "Bir hata oluştu.");
-    state.messages.push({ role: "assistant", content: data.answer });
+    state.messages.push({ role: "assistant", content: data.answer + (data.usedKeySource === "shared" ? "\\n\\n_Not: Site sahibinin ortak API havuzu kullanıldı._" : "") });
   } catch (error) {
     state.messages.push({ role: "assistant", content: "Bağlantı hatası: " + error.message });
   } finally {
@@ -137,5 +198,8 @@ $("#historyList").addEventListener("click", event => { const button = event.targ
 $("#libraryCards").addEventListener("click", event => { const button = event.target.closest("[data-id]"); if (button) openConversation(button.dataset.id); });
 $("#deleteHistory").addEventListener("click", () => { if (confirm("Bu cihazdaki tüm sohbet geçmişi silinsin mi?")) { localStorage.removeItem(STORAGE_KEY); renderHistory(); startNewChat(); } });
 renderHistory();
+renderApiKeys();
+$("#addApiKey")?.addEventListener("click", addApiKey);
+$("#apiKeyInput")?.addEventListener("keydown", event => { if (event.key === "Enter") addApiKey(); });
 loadModels();
 showMessages();
