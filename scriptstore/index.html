@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090b12">
+  <meta name="description" content="ScriptStore — Roblox Studio için Luau script topluluğu.">
+  <title>ScriptStore — Luau Community</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./"><span class="brand-icon">S</span>Script<span>Store</span></a>
+    <nav class="main-nav"><a class="active" href="#browse">Keşfet</a><a href="#popular">Popüler</a><a href="#guidelines">Kurallar</a></nav>
+    <div class="top-actions"><button class="btn btn-ghost" id="loginBtn">Giriş yap</button><button class="btn btn-primary" id="publishBtn">＋ Kod paylaş</button><button class="avatar hidden" id="accountBtn" aria-label="Hesap">U</button></div>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="hero-glow"></div><div class="eyebrow"><i></i> ROBLOX STUDIO • LUAU COMMUNITY</div>
+      <h1>Build. Share.<br><span>Level up.</span></h1>
+      <p>Roblox Studio projelerin için topluluk tarafından paylaşılan Luau kodlarını keşfet, öğren ve paylaş.</p>
+      <div class="hero-search"><span>⌕</span><input id="searchInput" type="search" placeholder="Script, oyun veya kategori ara..."><kbd>⌘ K</kbd></div>
+      <div class="hero-meta"><span>✦ Topluluk odaklı</span><span>⌘ Açık kaynak kodlar</span><span>✓ Moderasyonlu paylaşım</span></div>
+    </section>
+    <section class="content" id="browse">
+      <aside class="sidebar">
+        <div class="side-title">KÜTÜPHANE</div>
+        <button class="filter active" data-category="All"><span>◈</span> Tüm kodlar</button>
+        <button class="filter" data-category="Gameplay"><span>▣</span> Gameplay</button>
+        <button class="filter" data-category="UI"><span>▤</span> UI & Arayüz</button>
+        <button class="filter" data-category="Utilities"><span>⌘</span> Araçlar</button>
+        <button class="filter" data-category="Data"><span>◫</span> Veri & Kayıt</button>
+        <button class="filter" data-category="Learning"><span>✧</span> Öğrenme</button>
+        <div class="side-note" id="guidelines"><strong>Topluluk kuralları</strong><p>Yalnızca Roblox Studio ve Luau geliştirme içerikleri paylaş. Exploit, hile, hesap erişimi veya kötüye kullanım kodları kabul edilmez.</p><a href="https://create.roblox.com/docs/luau" target="_blank" rel="noreferrer">Luau dokümantasyonu ↗</a></div>
+      </aside>
+      <section class="feed">
+        <div class="section-head"><div><div class="eyebrow">TOPLULUK KÜTÜPHANESİ</div><h2>Keşfet <span class="count" id="resultCount">0</span></h2></div><select id="sortSelect" aria-label="Sıralama"><option value="new">En yeni</option><option value="popular">En popüler</option></select></div>
+        <div class="tag-row"><button class="tag active" data-category="All">Tümü</button><button class="tag" data-category="Gameplay">Gameplay</button><button class="tag" data-category="UI">UI</button><button class="tag" data-category="Utilities">Utilities</button><button class="tag" data-category="Learning">Learning</button></div>
+        <div class="notice hidden" id="notice"></div>
+        <div class="script-grid" id="scriptGrid"><div class="loading-card">Scriptler yükleniyor...</div></div>
+      </section>
+    </section>
+  </main>
+  <footer><a class="brand" href="./"><span class="brand-icon">S</span>Script<span>Store</span></a><p>Community-made Luau resources. Learn, build and share responsibly.</p><span>© 2026 ScriptStore</span></footer>
+  <dialog id="authDialog" class="dialog"><form method="dialog" class="dialog-close"><button aria-label="Kapat">×</button></form><div class="dialog-inner"><div class="eyebrow">SCRIPTSTORE HESABI</div><h2 id="authTitle">Topluluğa katıl</h2><p class="muted">Paylaşım yapmak ve favorilerini saklamak için giriş yap.</p><form id="authForm"><label>E-posta<input type="email" id="authEmail" required autocomplete="email" placeholder="mail@example.com"></label><label>Şifre<input type="password" id="authPassword" required minlength="6" autocomplete="current-password" placeholder="En az 6 karakter"></label><button class="btn btn-primary full" type="submit" id="authSubmit">Giriş yap</button></form><button class="text-btn" id="authSwitch">Hesabın yok mu? Kayıt ol</button><p class="form-message" id="authMessage"></p></div></dialog>
+  <dialog id="publishDialog" class="dialog wide"><form method="dialog" class="dialog-close"><button aria-label="Kapat">×</button></form><div class="dialog-inner"><div class="eyebrow">TOPLULUĞA KATKI</div><h2>Luau kodunu paylaş</h2><p class="muted">Gönderiler yayınlanmadan önce topluluk kurallarına uygunluk açısından incelenir.</p><form id="publishForm"><label>Başlık<input id="scriptTitle" maxlength="90" required placeholder="Örn. Round System"></label><label>Oyun / Proje<input id="gameName" maxlength="60" placeholder="Örn. My Roblox Experience"></label><label>Kategori<select id="scriptCategory"><option>Gameplay</option><option>UI</option><option>Utilities</option><option>Data</option><option>Learning</option></select></label><label>Açıklama<textarea id="scriptDescription" maxlength="700" rows="3" required placeholder="Kodun ne yaptığını ve nasıl kullanılacağını açıkla..."></textarea></label><label>Luau kodu<textarea id="scriptCode" class="code-input" maxlength="30000" rows="9" required spellcheck="false" placeholder="-- Roblox Studio Luau code"></textarea></label><label class="check-label"><input type="checkbox" id="rulesCheck" required> Bu içerik bana ait veya paylaşma iznim var; topluluk kurallarına uyuyor.</label><button class="btn btn-primary full" type="submit">İncelemeye gönder</button></form><p class="form-message" id="publishMessage"></p></div></dialog>
+  <dialog id="detailDialog" class="dialog wide"><form method="dialog" class="dialog-close"><button aria-label="Kapat">×</button></form><div class="dialog-inner" id="detailContent"></div></dialog>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
