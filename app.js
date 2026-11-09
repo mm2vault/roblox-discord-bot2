@@ -152,7 +152,7 @@ async function sendMessage(prefill) {
       saveApiKeys(keys);
     }
     if (!response.ok) throw new Error(data.error || "Bir hata oluştu.");
-    state.messages.push({ role: "assistant", content: data.answer + (data.usedKeySource === "shared" ? "\\n\\n_Not: Site sahibinin ortak API havuzu kullanıldı._" : "") });
+    state.messages.push({ role: "assistant", content: data.answer + (data.usedKeySource === "shared" ? "\n\n_Not: Site sahibinin ortak API havuzu kullanıldı._" : "") });
   } catch (error) {
     state.messages.push({ role: "assistant", content: "Bağlantı hatası: " + error.message });
   } finally {
